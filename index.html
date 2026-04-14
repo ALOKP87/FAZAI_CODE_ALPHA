@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>AI App Login</title>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+</head>
+
+<body style="font-family:sans-serif;text-align:center;margin-top:50px;">
+
+<h2>Login with Google</h2>
+<button onclick="login()">Login</button>
+
+<p id="status"></p>
+
+<script>
+const firebaseConfig = {
+  apiKey: "AIzaSyBJCdx5COsM1AT_zAMa3-lSHh_hm_n3fZE",
+  authDomain: "fmaicodealpha.firebaseapp.com",
+  databaseURL: "https://fmaicodealpha-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId: "fmaicodealpha",
+  storageBucket: "fmaicodealpha.firebasestorage.app",
+  messagingSenderId: "588641172134",
+  appId: "1:588641172134:web:9b4ad737756622c1ff9267"
+};
+
+firebase.initializeApp(firebaseConfig);
+
+const auth = firebase.auth();
+const db = firebase.database();
+
+// 🔐 ALLOWED USERS LIST
+const allowedEmails = [
+  "yourgmail@gmail.com"
+];
+
+// LOGIN FUNCTION
+function login() {
+  const provider = new firebase.auth.GoogleAuthProvider();
+
+  auth.signInWithPopup(provider)
+    .then(result => {
+      const user = result.user;
+
+      // 🔥 CHECK ACCESS
+      if (!allowedEmails.includes(user.email)) {
+        alert("Access Denied ❌");
+        auth.signOut();
+        return;
+      }
+
+      // ✅ SAVE USER
+      db.ref("users/" + user.uid).set({
+        uid: user.uid,
+        name: user.displayName,
+        email: user.email
+      });
+
+      document.getElementById("status").innerText =
+        "Welcome " + user.displayName;
+
+    })
+    .catch(err => {
+      console.log(err);
+    });
+}
+
+// AUTO CHECK LOGIN
+auth.onAuthStateChanged(user => {
+  if (user) {
+    document.getElementById("status").innerText =
+      "Logged in as " + user.email;
+  }
+});
+</script>
+
+</body>
+</html>
